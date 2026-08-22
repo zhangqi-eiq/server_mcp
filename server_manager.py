@@ -10,7 +10,8 @@ from pathlib import Path
 
 # ── 路径常量 ──────────────────────────────────────────────────────────
 
-# PyInstaller 打包后，配置文件应与 exe 同目录
+# PyInstaller 打包后，本地目录指 exe 所在目录（用于便携模式）。
+# 默认行为是优先用全局目录 ~/.ssh-mcp-server/，本地目录作为便携场景的回退。
 if getattr(sys, 'frozen', False):
     _LOCAL_DIR = Path(sys.executable).parent
 else:
@@ -20,15 +21,22 @@ _GLOBAL_DIR = Path.home() / ".ssh-mcp-server"
 
 
 def _find_file(filename: str) -> Path:
-    """按优先级查找配置文件：本地目录 > 全局目录"""
-    local = _LOCAL_DIR / filename
-    if local.exists():
-        return local
+    """查找配置文件。
+
+    优先级：全局目录 > 本地目录（便携模式）> 全局目录（首次创建）。
+
+    这样默认修改的是系统级 ~/.ssh-mcp-server/ 下的配置，
+    只有当用户把 profiles.json 放到 exe 同目录、且全局不存在时，
+    才走便携模式（适合 U 盘场景）。
+    """
+    _GLOBAL_DIR.mkdir(parents=True, exist_ok=True)
     global_path = _GLOBAL_DIR / filename
     if global_path.exists():
         return global_path
+    local = _LOCAL_DIR / filename
+    if local.exists():
+        return local
     # 都不存在时，默认保存到全局目录
-    _GLOBAL_DIR.mkdir(parents=True, exist_ok=True)
     return global_path
 
 
