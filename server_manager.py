@@ -609,10 +609,13 @@ class ServerManagerApp:
                     self.root.after(0, lambda: self._test_result(True, "连接成功!"))
                 else:
                     self.root.after(0, lambda: self._test_result(False, "连接异常: 未能执行测试命令"))
-            except ImportError:
-                self.root.after(0, lambda: self._test_result(False, "paramiko 未安装，请运行: pip install paramiko"))
+            except ImportError as e:
+                # Surface the actual missing module so the user can see
+                # whether it's paramiko itself or one of its compiled
+                # deps (cryptography, bcrypt, pynacl, ...).
+                self.root.after(0, lambda: self._test_result(False, f"依赖缺失: {e}"))
             except Exception as e:
-                self.root.after(0, lambda: self._test_result(False, f"连接失败: {e}"))
+                self.root.after(0, lambda: self._test_result(False, f"连接失败: {type(e).__name__}: {e}"))
 
         threading.Thread(target=_do_test, daemon=True).start()
 
