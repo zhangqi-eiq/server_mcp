@@ -4,7 +4,12 @@
 
 一个 [MCP](https://modelcontextprotocol.io/) 服务器，把远程 SSH 主机上的文件系统暴露成一组工具。注册到 Claude Code 后，你可以让它读取 `/home/you/proj/main.py`、改函数、跑 `pytest`、在远程目录里 grep —— 全部走 SSH，且全程受路径白名单和命令黑名单保护。
 
-[English version →](README.md)
+[English version →](README.md) ·
+[GitHub →](https://github.com/zhangqi-eiq/server_mcp)
+
+## 协议
+
+MIT —— 详见 [LICENSE](LICENSE)。
 
 ---
 
@@ -27,8 +32,8 @@
 
 ```bash
 # 1. 克隆并进入
-git clone <仓库地址> ssh-mcp-server
-cd ssh-mcp-server
+git clone https://github.com/zhangqi-eiq/server_mcp.git
+cd server_mcp
 
 # 2. 安装
 python install.py

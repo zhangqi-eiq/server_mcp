@@ -9,7 +9,12 @@ read `/home/you/proj/main.py`, edit a function, run `pytest`, or grep across the
 remote tree — and it talks to the server over SSH, with path-scoping and command
 filtering on the way.
 
-[中文文档 / Chinese version →](README.zh.md)
+[中文文档 / Chinese version →](README.zh.md) ·
+[GitHub →](https://github.com/zhangqi-eiq/server_mcp)
+
+## License
+
+MIT — see [LICENSE](LICENSE).
 
 ---
 
@@ -32,8 +37,8 @@ filtering on the way.
 
 ```bash
 # 1. Clone and enter
-git clone <this-repo> ssh-mcp-server
-cd ssh-mcp-server
+git clone https://github.com/zhangqi-eiq/server_mcp.git
+cd server_mcp
 
 # 2. Install (editable mode — picks up code changes immediately)
 python install.py
