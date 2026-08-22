@@ -44,6 +44,12 @@ cmd = [
     # explicitly add the runtime DLLs from the active interpreter.
     "--collect-all", "tkinter",
     "--collect-all", "_tkinter",
+    # paramiko is only used by the "test connection" feature inside a
+    # background thread. PyInstaller's static analysis sometimes misses
+    # function-local imports, so the GUI's "test connection" button
+    # would fail with ImportError at runtime. Force-collect paramiko
+    # plus its compiled deps (cryptography, bcrypt, pynacl, ...).
+    "--collect-all", "paramiko",
 ]
 
 if _TCL_DLL is None or _TK_DLL is None:

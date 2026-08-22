@@ -8,6 +8,13 @@ import tkinter as tk
 from tkinter import ttk, messagebox, filedialog
 from pathlib import Path
 
+# Top-level import so PyInstaller's static analysis picks it up when
+# building server_manager.py into a standalone exe. Burying this inside
+# _do_test() would still work for normal `python server_manager.py` runs
+# but the bundled exe would not see paramiko and the test-connection
+# feature would fail with ImportError.
+import paramiko  # noqa: E402  (intentionally after stdlib + tkinter)
+
 # ── 路径常量 ──────────────────────────────────────────────────────────
 
 # PyInstaller 打包后，本地目录指 exe 所在目录（用于便携模式）。
@@ -576,7 +583,6 @@ class ServerManagerApp:
 
         def _do_test():
             try:
-                import paramiko
                 client = paramiko.SSHClient()
                 client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
 
