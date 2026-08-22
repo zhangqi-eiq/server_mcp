@@ -42,9 +42,9 @@ python install.py
 
 `install.py` 干三件事：
 
-1. `pip install -e .` —— 安装包并注册 `ssh-mcp-server` 命令到 PATH。
+1. `pip install -e .` —— 安装包。
 2. 把 `config.json`（带占位值）拷到 `~/.ssh-mcp-server/`。
-3. 执行 `claude mcp add --scope user ssh-remote -- ssh-mcp-server` 把服务器注册到 Claude Code。
+3. 执行 `claude mcp add` 把服务器注册到 Claude Code。
 
 如果 `claude` CLI 不在 PATH 里，跑 `python install.py --no-register`，然后按 [手动配置](#手动配置) 自己加。
 
@@ -58,7 +58,8 @@ python install.py
 pip install -e .
 ```
 
-这会把 `ssh-mcp-server` 命令装到当前 Python 环境的 Scripts 目录。
+这会把 `ssh_mcp_server` 装到当前 Python 环境的 site-packages，
+之后 `python -m ssh_mcp_server` 就能启动服务器。
 
 ### 2. 创建配置
 
@@ -72,10 +73,17 @@ $EDITOR ~/.ssh-mcp-server/config.json
 
 ### 3. 注册到 Claude Code
 
+MCP 条目必须用你装包时的那个 Python 解释器。下面的 `<python>` 是
+**绝对路径**（`sys.executable`，比如
+Windows 下的 `C:\Users\you\.conda\envs\myenv\python.exe`，
+Linux 下的 `/home/you/.venv/bin/python`）。
+
 **方式 A —— 用户级，所有项目都能用：**
 
 ```bash
-claude mcp add --scope user ssh-remote -- ssh-mcp-server
+claude mcp add --scope user ssh-remote \
+  -e SSH_MCP_CONFIG="$HOME/.ssh-mcp-server/config.json" \
+  -- "<python>" -m ssh_mcp_server
 ```
 
 **方式 B —— 项目级，只在当前项目生效：**
@@ -86,7 +94,8 @@ claude mcp add --scope user ssh-remote -- ssh-mcp-server
 {
   "mcpServers": {
     "ssh-remote": {
-      "command": "ssh-mcp-server",
+      "command": "<python 绝对路径>",
+      "args": ["-m", "ssh_mcp_server"],
       "env": {
         "SSH_MCP_CONFIG": "/absolute/path/to/your/config.json"
       }

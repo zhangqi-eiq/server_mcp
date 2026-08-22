@@ -26,6 +26,14 @@ import subprocess
 import sys
 from pathlib import Path
 
+# Force UTF-8 stdout/stderr so unicode markers (✓ ✗ ──) survive Windows
+# console code pages (default GBK on zh-CN systems) and CJK environments.
+for _stream in (sys.stdout, sys.stderr):
+    try:
+        _stream.reconfigure(encoding="utf-8")
+    except (AttributeError, ValueError):
+        pass  # older Python or already closed
+
 PACKAGE_DIR = Path(__file__).parent.resolve()
 USER_CONFIG_DIR = Path.home() / ".ssh-mcp-server"
 USER_CONFIG_FILE = USER_CONFIG_DIR / "config.json"
@@ -89,9 +97,15 @@ def register_with_claude() -> bool:
         print(f"  -- '{MCP_SERVER_NAME}' already registered, skipping")
         return True
 
+    # Invoke via `python -m ssh_mcp_server` rather than the `ssh-mcp-server`
+    # console-script shim. The shim is a zipapp wrapper that doesn't always
+    # pick up editable-install site-packages entries, leading to
+    # `ModuleNotFoundError` at MCP-spawn time. Using `-m` goes through
+    # site-packages normally and works regardless of install mode.
     cmd = [
         "claude", "mcp", "add", "--scope", "user", MCP_SERVER_NAME,
-        "--", "ssh-mcp-server",
+        "-e", f"SSH_MCP_CONFIG={USER_CONFIG_FILE}",
+        "--", sys.executable, "-m", "ssh_mcp_server",
     ]
     print(f"  $ {' '.join(cmd)}")
     result = subprocess.run(cmd, capture_output=True, text=True)

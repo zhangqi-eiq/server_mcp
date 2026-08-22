@@ -47,11 +47,9 @@ python install.py
 
 That's it. `install.py` does three things:
 
-1. `pip install -e .` — installs the package and registers the `ssh-mcp-server`
-   console script.
+1. `pip install -e .` — installs the package.
 2. Copies `config.json` (with placeholder values) to `~/.ssh-mcp-server/`.
-3. Runs `claude mcp add --scope user ssh-remote -- ssh-mcp-server` so the server
-   shows up in Claude Code.
+3. Runs `claude mcp add` so the server shows up in Claude Code.
 
 If you do not have the `claude` CLI yet, run `python install.py --no-register`
 and add the MCP entry by hand (see [Manual configuration](#manual-configuration)).
@@ -69,7 +67,8 @@ correctly:
 pip install -e .
 ```
 
-This makes the `ssh-mcp-server` command available on PATH.
+This puts `ssh_mcp_server` on Python's import path so that
+`python -m ssh_mcp_server` can launch the server.
 
 ### 2. Create your config
 
@@ -84,10 +83,18 @@ $EDITOR ~/.ssh-mcp-server/config.json
 
 ### 3. Register with Claude Code
 
+The MCP entry must invoke the server via the Python interpreter you installed
+into. `<python>` below should be the **absolute path** to that interpreter
+(`sys.executable` from your activated env, e.g.
+`C:\Users\you\.conda\envs\myenv\python.exe` on Windows or
+`/home/you/.venv/bin/python` on Linux).
+
 **Option A — user-scope, available in every project:**
 
 ```bash
-claude mcp add --scope user ssh-remote -- ssh-mcp-server
+claude mcp add --scope user ssh-remote \
+  -e SSH_MCP_CONFIG="$HOME/.ssh-mcp-server/config.json" \
+  -- "<python>" -m ssh_mcp_server
 ```
 
 **Option B — project-scope, only this project:**
@@ -98,7 +105,8 @@ Create `.mcp.json` in your project root:
 {
   "mcpServers": {
     "ssh-remote": {
-      "command": "ssh-mcp-server",
+      "command": "<absolute path to python>",
+      "args": ["-m", "ssh_mcp_server"],
       "env": {
         "SSH_MCP_CONFIG": "/absolute/path/to/your/config.json"
       }
